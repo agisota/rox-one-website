@@ -474,9 +474,7 @@ export default function IndexEn(): JSX.Element {
                         <h1
                             ref={wordmarkRef}
                             className="tilt-h1 living-wordmark select-none whitespace-nowrap text-center leading-[0.88] tracking-[-0.06em] text-[clamp(4.5rem,17vw,19rem)] cursor-pointer"
-                            aria-label="ROX.ONE — click for bloom"
-                            role="button"
-                            tabIndex={-1}
+                            aria-label="ROX.ONE"
                         >
                             {LETTERS.map((c, i) => (
                                 <span
