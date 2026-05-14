@@ -1,0 +1,5 @@
+gatsby/
+gatsby*
+mdxImportGen.js
+public
+static/scripts/
