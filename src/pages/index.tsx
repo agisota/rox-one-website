@@ -327,10 +327,12 @@ export default function Index(): JSX.Element {
         return () => window.removeEventListener('rox:update-available', onUpdate)
     }, [])
 
-    // Keyboard — info overlay (i/?), Escape closes; Konami code
+    // Keyboard: info overlay (i/?), Escape, Konami invert, type-"rox" bloom
     useEffect(() => {
-        let buf: string[] = []
+        let konamiBuf: string[] = []
+        let typeBuf: string[] = []
         let konamiTimer: ReturnType<typeof setTimeout> | null = null
+        let roxFlashTimer: ReturnType<typeof setTimeout> | null = null
 
         const handler = (e: KeyboardEvent) => {
             const target = e.target as HTMLElement | null
@@ -346,25 +348,47 @@ export default function Index(): JSX.Element {
                 setShowInfo(false)
             }
 
-            // Konami sequence
             const k = e.key
-            buf.push(k)
-            if (buf.length > KONAMI.length) buf.shift()
-            const matches =
-                buf.length === KONAMI.length &&
-                buf.every((x, i) => x === KONAMI[i] || x.toLowerCase() === KONAMI[i].toLowerCase())
-            if (matches) {
-                buf = []
+
+            // Konami sequence
+            konamiBuf.push(k)
+            if (konamiBuf.length > KONAMI.length) konamiBuf.shift()
+            const konamiMatches =
+                konamiBuf.length === KONAMI.length &&
+                konamiBuf.every(
+                    (x, i) => x === KONAMI[i] || x.toLowerCase() === KONAMI[i].toLowerCase(),
+                )
+            if (konamiMatches) {
+                konamiBuf = []
                 const root = document.documentElement
                 root.classList.add('konami-invert')
                 if (konamiTimer) clearTimeout(konamiTimer)
                 konamiTimer = setTimeout(() => root.classList.remove('konami-invert'), 5000)
+            }
+
+            // Type-"rox" easter egg — single-char keys only, triggers instant bloom
+            // and a brief accent flash on the wordmark.
+            if (k.length === 1 && /^[a-zа-я]$/i.test(k)) {
+                typeBuf.push(k.toLowerCase())
+                if (typeBuf.length > 3) typeBuf.shift()
+                if (typeBuf.join('') === 'rox') {
+                    typeBuf = []
+                    // Jump straight into bloom regardless of cursor
+                    if (bloomRef.current.state === 'idle' && !reducedRef.current) {
+                        bloomRef.current = { state: 'in', startedAt: performance.now() }
+                    }
+                    const root = document.documentElement
+                    root.classList.add('rox-flash')
+                    if (roxFlashTimer) clearTimeout(roxFlashTimer)
+                    roxFlashTimer = setTimeout(() => root.classList.remove('rox-flash'), 1400)
+                }
             }
         }
         window.addEventListener('keydown', handler)
         return () => {
             window.removeEventListener('keydown', handler)
             if (konamiTimer) clearTimeout(konamiTimer)
+            if (roxFlashTimer) clearTimeout(roxFlashTimer)
         }
     }, [])
 
@@ -608,6 +632,10 @@ export default function Index(): JSX.Element {
                                 <div className="info-row">
                                     <dt>hover wordmark 5s</dt>
                                     <dd>bloom (auto)</dd>
+                                </div>
+                                <div className="info-row">
+                                    <dt>type "rox"</dt>
+                                    <dd>bloom + accent halo</dd>
                                 </div>
                             </dl>
 

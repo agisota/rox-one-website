@@ -16,9 +16,7 @@ module.exports = {
     trailingSlash: 'always',
     plugins: [
         'gatsby-plugin-react-helmet',
-        'gatsby-plugin-image',
         'gatsby-plugin-postcss',
-        'gatsby-transformer-json',
         {
             resolve: 'gatsby-plugin-sitemap',
             options: { excludes: [] },

@@ -317,6 +317,12 @@
         animation: konami-flash 5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
     }
 
+    /* ─── Type-"rox" easter egg — accent halo wash over the wordmark ──────── */
+
+    .rox-flash .tilt-h1 {
+        animation: rox-flash 1.4s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+    }
+
     /* ─── Reduced motion ─────────────────────────────────────────────────── */
 
     @media (prefers-reduced-motion: reduce) {
@@ -342,5 +348,22 @@
         6%   { filter: invert(1) hue-rotate(180deg); }
         80%  { filter: invert(1) hue-rotate(180deg); }
         100% { filter: invert(0); }
+    }
+    @keyframes rox-flash {
+        0% {
+            text-shadow:
+                0 0 0px rgba(94, 255, 176, 0),
+                0 0 0px rgba(94, 255, 176, 0);
+        }
+        30% {
+            text-shadow:
+                0 0 60px rgba(94, 255, 176, 0.5),
+                0 0 140px rgba(94, 255, 176, 0.22);
+        }
+        100% {
+            text-shadow:
+                0 0 0px rgba(94, 255, 176, 0),
+                0 0 0px rgba(94, 255, 176, 0);
+        }
     }
 }
