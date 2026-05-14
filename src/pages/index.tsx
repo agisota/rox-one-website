@@ -222,10 +222,18 @@ export default function Index(): JSX.Element {
         return () => cancelAnimationFrame(raf)
     }, [])
 
-    // Cursor — gentle wordmark tilt + soft directional shadow
+    // Cursor (desktop) + DeviceOrientation (mobile) — wordmark tilt + soft directional shadow
     useEffect(() => {
         const root = document.documentElement.style
         let raf = 0
+
+        const setTilt = (nx: number, ny: number) => {
+            root.setProperty('--tilt-x', `${(-ny * 1.0).toFixed(2)}deg`)
+            root.setProperty('--tilt-y', `${(nx * 1.0).toFixed(2)}deg`)
+            root.setProperty('--shadow-x', `${(-nx * 10).toFixed(1)}px`)
+            root.setProperty('--shadow-y', `${(-ny * 10).toFixed(1)}px`)
+        }
+
         const onMove = (e: MouseEvent) => {
             cancelAnimationFrame(raf)
             raf = requestAnimationFrame(() => {
@@ -233,22 +241,32 @@ export default function Index(): JSX.Element {
                 const halfH = window.innerHeight / 2
                 const nx = (e.clientX - halfW) / halfW
                 const ny = (e.clientY - halfH) / halfH
-                root.setProperty('--tilt-x', `${(-ny * 1.0).toFixed(2)}deg`)
-                root.setProperty('--tilt-y', `${(nx * 1.0).toFixed(2)}deg`)
-                root.setProperty('--shadow-x', `${(-nx * 10).toFixed(1)}px`)
-                root.setProperty('--shadow-y', `${(-ny * 10).toFixed(1)}px`)
+                setTilt(nx, ny)
             })
         }
-        const onLeave = () => {
-            root.setProperty('--tilt-x', '0deg')
-            root.setProperty('--tilt-y', '0deg')
-            root.setProperty('--shadow-x', '0px')
-            root.setProperty('--shadow-y', '0px')
+        const onLeave = () => setTilt(0, 0)
+
+        // Mobile / tablet: physical device tilt drives the wordmark.
+        // Android/Chrome fires unconditionally; iOS 13+ needs requestPermission,
+        // which requires user gesture — we don't prompt, just listen, and it
+        // silently no-ops on iOS (cursor path remains primary anyway).
+        const onOrient = (e: DeviceOrientationEvent) => {
+            if (e.gamma == null || e.beta == null) return
+            cancelAnimationFrame(raf)
+            raf = requestAnimationFrame(() => {
+                // gamma: left/right -90..90 → ±1; beta: front/back 0..180 → centered around 0
+                const nx = clamp(e.gamma! / 30, -1, 1)
+                const ny = clamp((e.beta! - 30) / 45, -1, 1)
+                setTilt(nx, ny)
+            })
         }
+
         window.addEventListener('mousemove', onMove, { passive: true })
+        window.addEventListener('deviceorientation', onOrient, { passive: true })
         document.addEventListener('mouseleave', onLeave)
         return () => {
             window.removeEventListener('mousemove', onMove)
+            window.removeEventListener('deviceorientation', onOrient)
             document.removeEventListener('mouseleave', onLeave)
             cancelAnimationFrame(raf)
         }
@@ -374,6 +392,14 @@ export default function Index(): JSX.Element {
                         sameAs: ['https://github.com/agisota/rox-one-terminal'],
                     })}
                 </script>
+                {/* Cloudflare Web Analytics — cookieless, only loads if token is configured */}
+                {process.env.GATSBY_CF_BEACON_TOKEN && (
+                    <script
+                        defer
+                        src="https://static.cloudflareinsights.com/beacon.min.js"
+                        data-cf-beacon={`{"token":"${process.env.GATSBY_CF_BEACON_TOKEN}"}`}
+                    />
+                )}
             </Helmet>
 
             <main className="fixed inset-0 grid place-items-center overflow-hidden">
@@ -413,6 +439,18 @@ export default function Index(): JSX.Element {
                         </a>
                     </div>
                 </div>
+
+                {/* Live status pill — bottom-left, almost invisible, fades in late */}
+                <a
+                    href="https://github.com/agisota/rox-one-terminal/releases"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="live-pill"
+                    aria-label={`ROX.ONE Terminal ${version} on GitHub`}
+                >
+                    <span aria-hidden className="live-dot" />
+                    <span>{version}</span>
+                </a>
 
                 {showInfo && (
                     <div
