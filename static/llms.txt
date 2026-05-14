@@ -1,0 +1,27 @@
+# ROX.ONE
+
+> Agent-native desktop terminal for working with the most powerful LLMs (Anthropic, OpenAI, Google, GitHub Copilot). Multi-session, MCP support, granular permissions, event-driven automation. Runs locally on macOS Apple Silicon.
+
+## Product
+
+- [Download (macOS arm64 DMG)](https://github.com/agisota/rox-one-terminal/releases/latest/download/ROX-ONE-arm64.dmg): direct link to the latest universal release
+- [GitHub repository](https://github.com/agisota/rox-one-terminal): source, releases, issues
+- [Latest release metadata (JSON)](https://api.github.com/repos/agisota/rox-one-terminal/releases/latest): version, assets, changelog
+- [Apache 2.0 license](https://github.com/agisota/rox-one-terminal/blob/main/LICENSE)
+
+## Site
+
+- [rox.one](https://rox.one): single-screen splash, this site
+- [Site source](https://github.com/agisota/rox-one-website): MIT licensed
+
+## Capabilities
+
+- Connects to Anthropic, OpenAI, Google, and GitHub Copilot using user-supplied API keys (no proxy).
+- Speaks the Model Context Protocol (MCP) for tool servers: filesystem, github, postgres, custom.
+- Four access modes — read-only, edit, shell, yolo — switchable on a hotkey.
+- Multi-session inbox: parallel conversations with isolated context, side-by-side comparison.
+- Event-driven automation: triggers on file changes, repo pushes, scheduled cron.
+
+## Optional
+
+- [Other platforms (Linux/Windows install scripts)](https://github.com/agisota/rox-one-terminal/releases/latest)

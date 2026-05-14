@@ -340,11 +340,40 @@ export default function Index(): JSX.Element {
                 <meta property="og:image" content="https://rox.one/og/default.png" />
                 <meta property="og:image:width" content="1200" />
                 <meta property="og:image:height" content="630" />
+                <meta property="og:image:alt" content="ROX.ONE wordmark on a deep cinematic backdrop" />
                 <meta name="twitter:card" content="summary_large_image" />
                 <meta name="twitter:image" content="https://rox.one/og/default.png" />
+                <link rel="canonical" href="https://rox.one/" />
                 <link rel="icon" type="image/svg+xml" href="/icon.svg" />
                 <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
                 <link rel="manifest" href="/manifest.webmanifest" />
+                <link rel="preload" as="image" href="/og/default.png" />
+                <link
+                    rel="alternate"
+                    type="text/plain"
+                    href="/llms.txt"
+                    title="LLM-friendly site summary"
+                />
+                <script type="application/ld+json">
+                    {JSON.stringify({
+                        '@context': 'https://schema.org',
+                        '@type': 'SoftwareApplication',
+                        name: 'ROX.ONE Terminal',
+                        alternateName: 'ROX.ONE',
+                        description:
+                            'Agent-native desktop terminal for working with the most powerful LLMs — Anthropic, OpenAI, Google, GitHub Copilot. Multi-session, MCP support, granular permissions, event-driven automation.',
+                        url: 'https://rox.one',
+                        downloadUrl: DMG_URL,
+                        operatingSystem: 'macOS',
+                        applicationCategory: 'DeveloperApplication',
+                        softwareVersion: version,
+                        license: 'https://www.apache.org/licenses/LICENSE-2.0',
+                        author: { '@type': 'Organization', name: 'ROX.ONE', url: 'https://rox.one' },
+                        offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+                        image: 'https://rox.one/og/default.png',
+                        sameAs: ['https://github.com/agisota/rox-one-terminal'],
+                    })}
+                </script>
             </Helmet>
 
             <main className="fixed inset-0 grid place-items-center overflow-hidden">

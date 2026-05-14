@@ -1,4 +1,5 @@
-Contact: mailto:security-reports@posthog.com
-Preferred-Languages: en
-Canonical: https://posthog.com/.well-known/security.txt
-Policy: https://posthog.com/handbook/company/security
+Contact: https://github.com/agisota/rox-one-terminal/security/advisories/new
+Preferred-Languages: en, ru
+Canonical: https://rox.one/.well-known/security.txt
+Policy: https://github.com/agisota/rox-one-terminal/blob/main/SECURITY.md
+Expires: 2027-05-14T00:00:00.000Z
