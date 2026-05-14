@@ -47,6 +47,9 @@ test.describe('rox.one splash', () => {
     })
 
     test('info overlay opens on "i" and closes on Escape', async ({ page }) => {
+        // Wait for hydration before exercising keyboard handlers — the SSR
+        // HTML loads before React attaches the document-level keydown listener.
+        await page.locator('html[data-rox-ready="true"]').waitFor({ state: 'attached' })
         await page.keyboard.press('i')
         const overlay = page.locator('[role="dialog"]')
         await expect(overlay).toBeVisible()

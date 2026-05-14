@@ -331,6 +331,9 @@ export default function IndexEn(): JSX.Element {
         let konamiTimer: ReturnType<typeof setTimeout> | null = null
         let roxFlashTimer: ReturnType<typeof setTimeout> | null = null
 
+        // Hydration marker — smoke tests wait on this before pressing keys.
+        document.documentElement.setAttribute('data-rox-ready', 'true')
+
         const handler = (e: KeyboardEvent) => {
             const target = e.target as HTMLElement | null
             const inField = target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA')

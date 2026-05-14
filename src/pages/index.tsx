@@ -363,6 +363,11 @@ export default function Index(): JSX.Element {
         let konamiTimer: ReturnType<typeof setTimeout> | null = null
         let roxFlashTimer: ReturnType<typeof setTimeout> | null = null
 
+        // Mark the document as hydrated. Smoke tests wait on this before
+        // exercising keyboard handlers — on cold CI runners the press fires
+        // before this effect commits otherwise. Cheap, no perf cost.
+        document.documentElement.setAttribute('data-rox-ready', 'true')
+
         const handler = (e: KeyboardEvent) => {
             const target = e.target as HTMLElement | null
             const inField = target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA')
