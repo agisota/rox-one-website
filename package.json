@@ -13,13 +13,16 @@
     },
     "private": true,
     "scripts": {
+        "prebuild": "node scripts/build-assets.js",
         "build": "gatsby build",
+        "predevelop": "node scripts/build-assets.js",
         "develop": "gatsby develop -H 0.0.0.0 -p 8001",
         "start": "gatsby develop -H 0.0.0.0 -p 8001",
         "serve": "gatsby serve",
         "clean": "gatsby clean",
         "format": "prettier --write \"**/*.{html,js,ts,tsx,json,css,scss}\"",
-        "typecheck": "tsc --noEmit"
+        "typecheck": "tsc --noEmit",
+        "test:e2e": "playwright test"
     },
     "dependencies": {
         "@fontsource-variable/geist": "^5.2.8",
