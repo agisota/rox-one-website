@@ -5,8 +5,11 @@ import * as path from 'path'
 const REPO = 'agisota/rox-one-terminal'
 const LATEST_API = `https://api.github.com/repos/${REPO}/releases/latest`
 const RELEASES_API = `https://api.github.com/repos/${REPO}/releases?per_page=10`
+const REPO_API = `https://api.github.com/repos/${REPO}`
+
 const RELEASE_CACHE = path.join(__dirname, '.cache/rox-release.json')
 const RELEASES_CACHE = path.join(__dirname, '.cache/rox-releases.json')
+const REPO_CACHE = path.join(__dirname, '.cache/rox-repo.json')
 
 interface ReleaseSnapshot {
     tag_name: string
@@ -36,33 +39,30 @@ const FALLBACK: ReleaseSnapshot = {
     arm64_zip_size: 309366025,
 }
 
-/**
- * Strip GitHub-flavored markdown to plain text, then truncate.
- * Why inline: introducing a markdown lib for a couple of release-note excerpts
- * is more dep weight than it's worth. The output is decorative, not canonical
- * — full bodies live on the GitHub release page (linked from each entry).
- */
 function stripMarkdown(s: string, limit = 320): string {
     if (!s) return ''
     const cleaned = s
-        // code fences and inline code
         .replace(/```[\s\S]*?```/g, ' ')
         .replace(/`([^`]+)`/g, '$1')
-        // images and links → keep the label only
         .replace(/!\[[^\]]*\]\([^)]*\)/g, ' ')
         .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1')
-        // bold / italic markers
         .replace(/(\*\*|__)(.*?)\1/g, '$2')
         .replace(/(\*|_)(.*?)\1/g, '$2')
-        // headings and list markers
         .replace(/^#+\s+/gm, '')
         .replace(/^[*+-]\s+/gm, '· ')
-        // html escapes left behind
         .replace(/<[^>]+>/g, '')
-        // collapse whitespace
         .replace(/\s+/g, ' ')
         .trim()
     return cleaned.length > limit ? cleaned.slice(0, limit).trimEnd() + '…' : cleaned
+}
+
+function escapeXml(s: string): string {
+    return (s || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&apos;')
 }
 
 async function fetchJson(url: string): Promise<any | null> {
@@ -77,7 +77,7 @@ async function fetchJson(url: string): Promise<any | null> {
 export const onPreBootstrap: GatsbyNode['onPreBootstrap'] = async () => {
     fs.mkdirSync(path.dirname(RELEASE_CACHE), { recursive: true })
 
-    // Latest release snapshot — for download links and version display.
+    // Latest release snapshot for download links.
     const release = await fetchJson(LATEST_API)
     if (release) {
         const dmg = release.assets?.find((a: any) => a.name === 'ROX-ONE-arm64.dmg')
@@ -94,7 +94,7 @@ export const onPreBootstrap: GatsbyNode['onPreBootstrap'] = async () => {
         fs.writeFileSync(RELEASE_CACHE, JSON.stringify(snapshot, null, 2))
     }
 
-    // Recent releases list — for the /changelog page.
+    // Releases list for /changelog and RSS.
     const releases = await fetchJson(RELEASES_API)
     if (Array.isArray(releases)) {
         const list: ReleaseEntry[] = releases.map((r: any) => ({
@@ -106,6 +106,24 @@ export const onPreBootstrap: GatsbyNode['onPreBootstrap'] = async () => {
         }))
         fs.writeFileSync(RELEASES_CACHE, JSON.stringify(list, null, 2))
     }
+
+    // Repo metadata for the star count.
+    const repo = await fetchJson(REPO_API)
+    if (repo && typeof repo.stargazers_count === 'number') {
+        fs.writeFileSync(
+            REPO_CACHE,
+            JSON.stringify(
+                {
+                    stars: repo.stargazers_count,
+                    forks: repo.forks_count ?? 0,
+                    description: repo.description ?? '',
+                    html_url: repo.html_url,
+                },
+                null,
+                2,
+            ),
+        )
+    }
 }
 
 export const sourceNodes: GatsbyNode['sourceNodes'] = async ({
@@ -113,7 +131,6 @@ export const sourceNodes: GatsbyNode['sourceNodes'] = async ({
     createNodeId,
     createContentDigest,
 }) => {
-    // Latest release singleton (used by the splash).
     let latest: ReleaseSnapshot
     try {
         latest = JSON.parse(fs.readFileSync(RELEASE_CACHE, 'utf8'))
@@ -126,7 +143,6 @@ export const sourceNodes: GatsbyNode['sourceNodes'] = async ({
         internal: { type: 'RoxRelease', contentDigest: createContentDigest(latest) },
     })
 
-    // Releases list nodes (used by /changelog).
     let list: ReleaseEntry[] = []
     try {
         list = JSON.parse(fs.readFileSync(RELEASES_CACHE, 'utf8'))
@@ -152,4 +168,46 @@ export const sourceNodes: GatsbyNode['sourceNodes'] = async ({
             },
         })
     })
+}
+
+/**
+ * Generate /feed.xml after the build completes. Reads the cached releases
+ * list, emits a standard RSS 2.0 channel. Devs can subscribe in any RSS
+ * reader and get a notification when a new ROX release lands.
+ */
+export const onPostBuild: GatsbyNode['onPostBuild'] = async () => {
+    let list: ReleaseEntry[] = []
+    try {
+        list = JSON.parse(fs.readFileSync(RELEASES_CACHE, 'utf8'))
+    } catch {
+        return
+    }
+
+    const items = list
+        .slice(0, 20)
+        .map(
+            (r) => `    <item>
+      <title>${escapeXml(r.name)}</title>
+      <link>${escapeXml(r.html_url)}</link>
+      <guid isPermaLink="false">rox-${escapeXml(r.tag_name)}</guid>
+      <pubDate>${new Date(r.published_at).toUTCString()}</pubDate>
+      <description><![CDATA[${r.body}]]></description>
+    </item>`,
+        )
+        .join('\n')
+
+    const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>ROX.ONE — releases</title>
+    <link>https://rox.one</link>
+    <description>Release feed for ROX.ONE Terminal — agent-native terminal for the most powerful LLMs.</description>
+    <language>en</language>
+    <atom:link href="https://rox.one/feed.xml" rel="self" type="application/rss+xml"/>
+    <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>
+${items}
+  </channel>
+</rss>
+`
+    fs.writeFileSync(path.join(__dirname, 'public', 'feed.xml'), xml)
 }

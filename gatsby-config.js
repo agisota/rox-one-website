@@ -4,9 +4,9 @@ require('dotenv').config({ path: `.env.${process.env.NODE_ENV}` })
 const fs = require('fs')
 const path = require('path')
 
-// Pull the release tag baked by the previous build's onPreBootstrap (or fall
-// back to a hardcoded version if no cache exists yet). This way JSON-LD,
-// meta tags, and any siteMetadata consumer get the version at build time.
+// Pull the release tag and star count baked by the previous build's
+// onPreBootstrap (or fall back to literals if no cache exists yet). This way
+// JSON-LD, meta tags, and any siteMetadata consumer get build-time values.
 let buildTimeVersion = 'v0.9.2'
 try {
     const cache = JSON.parse(
@@ -15,6 +15,16 @@ try {
     if (cache.tag_name) buildTimeVersion = cache.tag_name
 } catch {
     /* first build — fall back to literal */
+}
+
+let buildTimeStars = 0
+try {
+    const repo = JSON.parse(
+        fs.readFileSync(path.join(__dirname, '.cache', 'rox-repo.json'), 'utf8'),
+    )
+    if (typeof repo.stars === 'number') buildTimeStars = repo.stars
+} catch {
+    /* first build — no star count yet */
 }
 
 module.exports = {
@@ -29,6 +39,7 @@ module.exports = {
         twitterUsername: '@rox_one',
         siteUrl: 'https://rox.one',
         version: buildTimeVersion,
+        stars: buildTimeStars,
     },
     trailingSlash: 'always',
     plugins: [

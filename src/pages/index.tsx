@@ -1,6 +1,8 @@
-import React, { useEffect, useRef, useState } from 'react'
-import { graphql, useStaticQuery } from 'gatsby'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
+import { graphql, useStaticQuery, navigate } from 'gatsby'
 import { Helmet as HelmetUntyped } from 'react-helmet'
+import ParticleBackdrop from '../components/ParticleBackdrop'
+import CommandPalette from '../components/CommandPalette'
 
 const Helmet = HelmetUntyped as unknown as React.ComponentType<any>
 
@@ -65,25 +67,30 @@ const KONAMI = [
 ]
 
 export default function Index(): JSX.Element {
-    // Build-time version from siteMetadata (set in gatsby-config from .cache/rox-release.json).
-    // The runtime fetch below replaces it if a newer release surfaces.
+    // Build-time version + star count from siteMetadata (set in gatsby-config
+    // from .cache/rox-release.json + rox-repo.json). The runtime fetch below
+    // replaces version if a newer release surfaced since the last build.
     const data = useStaticQuery(graphql`
         query {
             site {
                 siteMetadata {
                     version
+                    stars
                 }
             }
         }
     `)
     const buildVersion: string = data?.site?.siteMetadata?.version || 'v0.9.2'
+    const buildStars: number = data?.site?.siteMetadata?.stars || 0
 
     const [mode, setMode] = useState<Mode>('day')
     const [prevMode, setPrevMode] = useState<Mode>('day')
     const [transitionStart, setTransitionStart] = useState<number | null>(null)
     const [showInfo, setShowInfo] = useState(false)
+    const [showPalette, setShowPalette] = useState(false)
     const [updateAvailable, setUpdateAvailable] = useState(false)
     const [version, setVersion] = useState<string>(buildVersion)
+    const [stars, setStars] = useState<number>(buildStars)
 
     const stateRef = useRef({ mode, prevMode, transitionStart })
     const reducedRef = useRef(false)
@@ -110,12 +117,19 @@ export default function Index(): JSX.Element {
         }
         mq.addEventListener('change', onMq)
 
-        // Pull latest release tag for the info overlay (best-effort; falls back)
+        // Pull latest release tag + star count for the info overlay
+        // (best-effort; build-time fallbacks already seeded).
         fetch('https://api.github.com/repos/agisota/rox-one-terminal/releases/latest', {
             headers: { Accept: 'application/vnd.github+json' },
         })
             .then((r) => (r.ok ? r.json() : null))
             .then((d) => d?.tag_name && setVersion(d.tag_name))
+            .catch(() => {})
+        fetch('https://api.github.com/repos/agisota/rox-one-terminal', {
+            headers: { Accept: 'application/vnd.github+json' },
+        })
+            .then((r) => (r.ok ? r.json() : null))
+            .then((d) => typeof d?.stargazers_count === 'number' && setStars(d.stargazers_count))
             .catch(() => {})
 
         return () => mq.removeEventListener('change', onMq)
@@ -353,6 +367,13 @@ export default function Index(): JSX.Element {
             const inField = target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA')
             if (inField) return
 
+            // Command palette — ⌘K / Ctrl+K (anywhere)
+            if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+                e.preventDefault()
+                setShowPalette((prev) => !prev)
+                return
+            }
+
             // Info overlay
             if (e.key === 'i' || e.key === 'I' || e.key === '?') {
                 setShowInfo((prev) => !prev)
@@ -520,6 +541,12 @@ export default function Index(): JSX.Element {
                 <link rel="dns-prefetch" href="https://github.com" />
                 <link
                     rel="alternate"
+                    type="application/rss+xml"
+                    title="ROX.ONE releases"
+                    href="/feed.xml"
+                />
+                <link
+                    rel="alternate"
                     type="text/plain"
                     href="/llms.txt"
                     title="LLM-friendly site summary"
@@ -579,6 +606,90 @@ export default function Index(): JSX.Element {
             <a href="#main" className="skip-link">
                 Skip to content
             </a>
+            <ParticleBackdrop />
+            <CommandPalette
+                open={showPalette}
+                onClose={() => setShowPalette(false)}
+                commands={[
+                    {
+                        id: 'download',
+                        label: 'Скачать ROX.ONE',
+                        hint: 'macOS arm64 .dmg',
+                        keywords: 'download dmg mac install',
+                        action: () => {
+                            window.location.href = DMG_URL
+                        },
+                    },
+                    {
+                        id: 'github',
+                        label: 'GitHub — rox-one-terminal',
+                        hint: 'product source',
+                        keywords: 'github source repo code',
+                        action: () => {
+                            window.open(
+                                'https://github.com/agisota/rox-one-terminal',
+                                '_blank',
+                                'noopener',
+                            )
+                        },
+                    },
+                    {
+                        id: 'changelog',
+                        label: 'Changelog',
+                        hint: 'release history',
+                        keywords: 'changelog releases history versions',
+                        action: () => navigate('/changelog/'),
+                    },
+                    {
+                        id: 'feed',
+                        label: 'RSS feed',
+                        hint: '/feed.xml',
+                        keywords: 'rss atom feed subscribe',
+                        action: () => navigate('/feed.xml'),
+                    },
+                    {
+                        id: 'info',
+                        label: 'About this site',
+                        hint: 'info overlay',
+                        keywords: 'info about meta',
+                        action: () => setShowInfo(true),
+                    },
+                    {
+                        id: 'site-source',
+                        label: 'GitHub — rox-one-website',
+                        hint: 'site source',
+                        keywords: 'site source repo this page',
+                        action: () => {
+                            window.open(
+                                'https://github.com/agisota/rox-one-website',
+                                '_blank',
+                                'noopener',
+                            )
+                        },
+                    },
+                    {
+                        id: 'humans',
+                        label: 'humans.txt',
+                        hint: 'old web tradition',
+                        keywords: 'humans credits ascii team',
+                        action: () => navigate('/humans.txt'),
+                    },
+                    {
+                        id: 'llms',
+                        label: 'llms.txt',
+                        hint: 'for AI crawlers',
+                        keywords: 'llms ai bot crawler',
+                        action: () => navigate('/llms.txt'),
+                    },
+                    {
+                        id: 'security',
+                        label: 'Security policy',
+                        hint: '/.well-known/security.txt',
+                        keywords: 'security disclosure cve',
+                        action: () => navigate('/.well-known/security.txt'),
+                    },
+                ]}
+            />
             <main id="main" className="fixed inset-0 grid place-items-center overflow-hidden">
                 <div aria-hidden className="atmo-base pointer-events-none absolute inset-0" />
                 <div aria-hidden className="atmo-key-warm pointer-events-none absolute inset-0 animate-fade-in animate-key-breathe" />
@@ -625,10 +736,17 @@ export default function Index(): JSX.Element {
                     target="_blank"
                     rel="noreferrer"
                     className="live-pill"
-                    aria-label={`ROX.ONE Terminal ${version} on GitHub`}
+                    aria-label={`ROX.ONE Terminal ${version} on GitHub${stars ? `, ${stars} stars` : ''}`}
                 >
                     <span aria-hidden className="live-dot" />
                     <span>{version}</span>
+                    {stars > 0 && (
+                        <span className="live-stars" aria-hidden>
+                            <span className="live-sep">·</span>
+                            <span className="live-star">★</span>
+                            {stars}
+                        </span>
+                    )}
                 </a>
 
                 {showInfo && (
@@ -682,6 +800,10 @@ export default function Index(): JSX.Element {
 
                             <p className="info-section">Keyboard</p>
                             <dl>
+                                <div className="info-row">
+                                    <dt>⌘K / Ctrl+K</dt>
+                                    <dd>command palette</dd>
+                                </div>
                                 <div className="info-row">
                                     <dt>i  /  ?</dt>
                                     <dd>open this panel</dd>

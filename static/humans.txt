@@ -1,0 +1,47 @@
+
+       ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+       ░                                          ░
+       ░                                          ░
+       ░             R O X · O N E                ░
+       ░                                          ░
+       ░       agent-native terminal for LLMs     ░
+       ░                                          ░
+       ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+
+       /* TEAM */
+
+       maintainer        agisota
+       contact           via github issues
+       repo (site)       github.com/agisota/rox-one-website
+       repo (product)    github.com/agisota/rox-one-terminal
+
+
+       /* THANKS */
+
+       Geist Sans        vercel.com/font
+       Tailwind CSS      tailwindcss.com
+       Gatsby            gatsbyjs.com
+       Cloudflare Pages  pages.cloudflare.com
+       sharp             sharp.pixelplumbing.com
+       Playwright        playwright.dev
+       axe-core          deque.com/axe
+
+       and to everyone who keeps the open web
+       running on weekends and weeknights.
+
+
+       /* SITE */
+
+       last update       2026-05-14
+       language          ru, en
+       doctype           HTML5
+       ide               vim / vscode / claude code
+       hosting           Cloudflare Pages
+
+       try: press i, ? — open this page's secrets
+       try: type r o x — wordmark blooms
+       try: ↑↑↓↓←→←→ba — five seconds of inverted theme
+       try: ⌘K / Ctrl+K — command palette
+
+
+                                · ROX.ONE ·

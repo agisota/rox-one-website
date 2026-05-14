@@ -393,6 +393,155 @@
         text-underline-offset: 4px;
     }
 
+    /* ─── Live pill stars ──────────────────────────────────────────────── */
+
+    .live-stars {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        color: theme('colors.fg-subtle');
+    }
+    .live-pill:hover .live-stars { color: theme('colors.fg-muted'); }
+    .live-sep {
+        opacity: 0.5;
+        margin: 0 2px;
+    }
+    .live-star {
+        color: #FBBF24;
+        font-size: 11px;
+        line-height: 1;
+        margin-right: 1px;
+    }
+
+    /* ─── Command palette (⌘K / Ctrl+K) ────────────────────────────────── */
+
+    .cmdk-scrim {
+        position: fixed;
+        inset: 0;
+        z-index: 90;
+        display: grid;
+        place-items: start center;
+        padding-top: 18vh;
+        background: rgba(7, 9, 12, 0.6);
+        backdrop-filter: blur(14px);
+        animation: cmdk-scrim-in 220ms cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+    .cmdk-panel {
+        width: min(560px, calc(100vw - 32px));
+        background: rgba(20, 22, 28, 0.92);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 14px;
+        box-shadow:
+            0 50px 100px -20px rgba(0, 0, 0, 0.7),
+            0 0 0 1px rgba(255, 255, 255, 0.04) inset;
+        overflow: hidden;
+        animation: cmdk-panel-in 320ms cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+    .cmdk-input-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 16px 18px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    .cmdk-prompt {
+        font-family: theme('fontFamily.mono');
+        color: theme('colors.fg-subtle');
+        font-size: 14px;
+    }
+    .cmdk-input {
+        flex: 1;
+        background: transparent;
+        border: 0;
+        outline: 0;
+        color: theme('colors.fg');
+        font-family: theme('fontFamily.sans');
+        font-size: 15px;
+        font-weight: 400;
+        letter-spacing: -0.005em;
+    }
+    .cmdk-input::placeholder {
+        color: theme('colors.fg-subtle');
+    }
+    .cmdk-kbd {
+        font-family: theme('fontFamily.mono');
+        font-size: 10px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: theme('colors.fg-subtle');
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 4px;
+        padding: 2px 6px;
+        line-height: 1;
+    }
+    .cmdk-list {
+        list-style: none;
+        margin: 0;
+        padding: 6px;
+        max-height: min(48vh, 360px);
+        overflow-y: auto;
+    }
+    .cmdk-list::-webkit-scrollbar {
+        width: 6px;
+    }
+    .cmdk-list::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.08);
+        border-radius: 3px;
+    }
+    .cmdk-item {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 10px 14px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background 120ms ease;
+    }
+    .cmdk-item.is-active {
+        background: rgba(255, 255, 255, 0.045);
+    }
+    .cmdk-label {
+        color: theme('colors.fg');
+        font-size: 14px;
+    }
+    .cmdk-hint {
+        color: theme('colors.fg-subtle');
+        font-family: theme('fontFamily.mono');
+        font-size: 11px;
+        letter-spacing: 0.08em;
+    }
+    .cmdk-empty {
+        padding: 22px 14px;
+        text-align: center;
+        color: theme('colors.fg-subtle');
+        font-family: theme('fontFamily.mono');
+        font-size: 12px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+    }
+    .cmdk-footer {
+        display: flex;
+        justify-content: space-between;
+        gap: 18px;
+        padding: 10px 18px;
+        border-top: 1px solid rgba(255, 255, 255, 0.06);
+        font-family: theme('fontFamily.mono');
+        font-size: 10px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: theme('colors.fg-subtle');
+    }
+    @keyframes cmdk-scrim-in {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+    @keyframes cmdk-panel-in {
+        from { opacity: 0; transform: translateY(-14px) scale(0.97); }
+        to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
     /* ─── SW update toast (bottom-right) ───────────────────────────────── */
 
     .update-toast {
