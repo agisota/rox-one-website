@@ -368,11 +368,73 @@ export default function Index(): JSX.Element {
         }
     }, [])
 
+    // Focus trap in info overlay — Tab cycles within panel, Esc closes,
+    // and on close focus returns to wherever it came from.
+    const focusReturnRef = useRef<HTMLElement | null>(null)
+    useEffect(() => {
+        if (!showInfo) return
+        focusReturnRef.current = document.activeElement as HTMLElement | null
+
+        // Move focus into the panel so screen readers announce it.
+        const panel = document.querySelector<HTMLElement>('.info-panel')
+        const focusables = panel
+            ? panel.querySelectorAll<HTMLElement>(
+                  'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])',
+              )
+            : null
+        focusables?.[0]?.focus()
+
+        const onTab = (e: KeyboardEvent) => {
+            if (e.key !== 'Tab' || !focusables || focusables.length === 0) return
+            const first = focusables[0]
+            const last = focusables[focusables.length - 1]
+            const active = document.activeElement
+            if (e.shiftKey && active === first) {
+                e.preventDefault()
+                last.focus()
+            } else if (!e.shiftKey && active === last) {
+                e.preventDefault()
+                first.focus()
+            }
+        }
+        document.addEventListener('keydown', onTab)
+        return () => {
+            document.removeEventListener('keydown', onTab)
+            // Restore focus to whatever opened the overlay (typically <body>).
+            focusReturnRef.current?.focus?.()
+        }
+    }, [showInfo])
+
+    // Dev-console greeting — invisible to normal users, delights anyone who opens inspector.
+    useEffect(() => {
+        if (typeof window === 'undefined') return
+        if ((window as any).__roxGreeted) return
+        ;(window as any).__roxGreeted = true
+        const css = [
+            'color: #5EFFB0',
+            'font-family: monospace',
+            'font-size: 13px',
+            'font-weight: 600',
+            'padding: 4px 0',
+        ].join(';')
+        // eslint-disable-next-line no-console
+        console.log(
+            '%c▍ ROX.ONE — agent-native terminal\n%cgithub.com/agisota/rox-one-terminal · %cv0.9.2',
+            css,
+            'color:#A0A09A;font-family:monospace;font-size:11px',
+            'color:#5EFFB0;font-family:monospace;font-size:11px',
+        )
+    }, [])
+
     return (
         <>
             <Helmet htmlAttributes={{ lang: 'ru' }}>
                 <title>ROX.ONE</title>
                 <meta name="theme-color" content="#08090C" />
+                <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+                <meta name="apple-mobile-web-app-capable" content="yes" />
+                <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+                <meta name="apple-mobile-web-app-title" content="ROX.ONE" />
                 <meta name="description" content="Agent-native terminal for the most powerful LLMs." />
                 <meta property="og:title" content="ROX.ONE" />
                 <meta property="og:description" content="Agent-native terminal for the most powerful LLMs." />
@@ -427,7 +489,10 @@ export default function Index(): JSX.Element {
                 )}
             </Helmet>
 
-            <main className="fixed inset-0 grid place-items-center overflow-hidden">
+            <a href="#main" className="skip-link">
+                Skip to content
+            </a>
+            <main id="main" className="fixed inset-0 grid place-items-center overflow-hidden">
                 <div aria-hidden className="atmo-base pointer-events-none absolute inset-0" />
                 <div aria-hidden className="atmo-key-warm pointer-events-none absolute inset-0 animate-fade-in animate-key-breathe" />
                 <div aria-hidden className="atmo-key-cool pointer-events-none absolute inset-0 animate-fade-in [animation-delay:0.2s]" />
