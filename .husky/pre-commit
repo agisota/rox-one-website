@@ -1,0 +1,2 @@
+# rox.one pre-commit — block broken types before they hit main
+pnpm typecheck
