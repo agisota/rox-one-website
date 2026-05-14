@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
+import { graphql, useStaticQuery } from 'gatsby'
 import { Helmet as HelmetUntyped } from 'react-helmet'
 
 const Helmet = HelmetUntyped as unknown as React.ComponentType<any>
@@ -64,12 +65,25 @@ const KONAMI = [
 ]
 
 export default function Index(): JSX.Element {
+    // Build-time version from siteMetadata (set in gatsby-config from .cache/rox-release.json).
+    // The runtime fetch below replaces it if a newer release surfaces.
+    const data = useStaticQuery(graphql`
+        query {
+            site {
+                siteMetadata {
+                    version
+                }
+            }
+        }
+    `)
+    const buildVersion: string = data?.site?.siteMetadata?.version || 'v0.9.2'
+
     const [mode, setMode] = useState<Mode>('day')
     const [prevMode, setPrevMode] = useState<Mode>('day')
     const [transitionStart, setTransitionStart] = useState<number | null>(null)
     const [showInfo, setShowInfo] = useState(false)
     const [updateAvailable, setUpdateAvailable] = useState(false)
-    const [version, setVersion] = useState<string>('v0.9.2')
+    const [version, setVersion] = useState<string>(buildVersion)
 
     const stateRef = useRef({ mode, prevMode, transitionStart })
     const reducedRef = useRef(false)
@@ -364,6 +378,30 @@ export default function Index(): JSX.Element {
                 root.classList.add('konami-invert')
                 if (konamiTimer) clearTimeout(konamiTimer)
                 konamiTimer = setTimeout(() => root.classList.remove('konami-invert'), 5000)
+
+                // Short sine-wave ping — created lazily, torn down after one shot.
+                // Wrapped in try/catch because Safari < 14.1 doesn't allow AudioContext
+                // creation in some keyboard handlers; we ignore those silently.
+                try {
+                    const AC = window.AudioContext || (window as any).webkitAudioContext
+                    if (AC && !reducedRef.current) {
+                        const ctx = new AC()
+                        const osc = ctx.createOscillator()
+                        const gain = ctx.createGain()
+                        osc.connect(gain)
+                        gain.connect(ctx.destination)
+                        osc.type = 'sine'
+                        osc.frequency.value = 880
+                        gain.gain.setValueAtTime(0, ctx.currentTime)
+                        gain.gain.linearRampToValueAtTime(0.05, ctx.currentTime + 0.02)
+                        gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.45)
+                        osc.start()
+                        osc.stop(ctx.currentTime + 0.5)
+                        osc.onended = () => ctx.close().catch(() => {})
+                    }
+                } catch {
+                    /* audio is decorative; ignore failures */
+                }
             }
 
             // Type-"rox" easter egg — single-char keys only, triggers instant bloom

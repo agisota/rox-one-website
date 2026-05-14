@@ -5,19 +5,30 @@
  *   - static/apple-touch-icon.png (iOS home-screen)
  *   - static/og/default.png (1200×630, social share preview)
  *
- * Why a custom script: gatsby-plugin-manifest generates PNGs from a *PNG* source,
- * not from SVG. We want SVG as truth (one file edits the brand mark everywhere),
- * so sharp rasterises on every build instead. Reproducible, no manual export.
+ * The OG image picks up the latest release tag from .cache/rox-release.json
+ * (written by gatsby-node onPreBootstrap on the previous build) so the
+ * social preview shows the version even before JS runs. Falls back
+ * gracefully if no cache exists yet.
  */
 
 const fs = require('fs')
 const path = require('path')
 const sharp = require('sharp')
 
-const STATIC = path.join(__dirname, '..', 'static')
+const ROOT = path.join(__dirname, '..')
+const STATIC = path.join(ROOT, 'static')
 const OG_DIR = path.join(STATIC, 'og')
+const RELEASE_CACHE = path.join(ROOT, '.cache', 'rox-release.json')
 
 fs.mkdirSync(OG_DIR, { recursive: true })
+
+let releaseTag = ''
+try {
+    const j = JSON.parse(fs.readFileSync(RELEASE_CACHE, 'utf8'))
+    releaseTag = j.tag_name || ''
+} catch {
+    /* first build — no cache yet, fall back to blank */
+}
 
 /* ── Square icon — derived from the existing static/icon.svg ────────────────
    Solid-fill version so it renders cleanly at 192/512/180px. */
@@ -63,16 +74,16 @@ const OG_SVG = `<?xml version="1.0" encoding="UTF-8"?>
       <stop offset="100%" stop-color="rgba(0,0,0,0)"/>
     </radialGradient>
     <radialGradient id="og-aurora" cx="88%" cy="14%" r="30%">
-      <stop offset="0%" stop-color="rgba(108,200,178,0.08)"/>
+      <stop offset="0%" stop-color="rgba(108,200,178,0.10)"/>
+      <stop offset="100%" stop-color="rgba(0,0,0,0)"/>
+    </radialGradient>
+    <radialGradient id="og-bloom" cx="50%" cy="35%" r="38%">
+      <stop offset="0%" stop-color="rgba(255,248,232,0.10)"/>
       <stop offset="100%" stop-color="rgba(0,0,0,0)"/>
     </radialGradient>
     <radialGradient id="og-vignette" cx="50%" cy="50%" r="70%">
       <stop offset="50%" stop-color="rgba(0,0,0,0)"/>
       <stop offset="100%" stop-color="rgba(0,0,0,0.45)"/>
-    </radialGradient>
-    <radialGradient id="og-shadow" cx="50%" cy="68%" r="40%" fx="50%" fy="68%">
-      <stop offset="0%" stop-color="rgba(0,0,0,0.5)"/>
-      <stop offset="100%" stop-color="rgba(0,0,0,0)"/>
     </radialGradient>
   </defs>
 
@@ -80,27 +91,41 @@ const OG_SVG = `<?xml version="1.0" encoding="UTF-8"?>
   <rect width="1200" height="630" fill="url(#og-key-warm)"/>
   <rect width="1200" height="630" fill="url(#og-key-cool)"/>
   <rect width="1200" height="630" fill="url(#og-aurora)"/>
+  <rect width="1200" height="630" fill="url(#og-bloom)"/>
 
   <!-- Ground shadow ellipse under wordmark -->
-  <ellipse cx="600" cy="430" rx="280" ry="14" fill="rgba(0,0,0,0.55)"/>
+  <ellipse cx="600" cy="438" rx="320" ry="12" fill="rgba(0,0,0,0.6)"/>
 
-  <!-- Wordmark — solid white, generous tracking, sits centered -->
-  <text x="600" y="400"
+  <!-- Wordmark — solid off-white, generous tracking, sits centered -->
+  <text x="600" y="408"
         text-anchor="middle"
         font-family="-apple-system, 'Segoe UI', Arial, sans-serif"
         font-weight="500"
-        font-size="220"
-        letter-spacing="-10"
+        font-size="230"
+        letter-spacing="-12"
         fill="#F5F4EF">ROXONE</text>
 
-  <!-- Footnote signature, mono lowercase -->
+  <!-- Footnote signature, mono lowercase, with version when known -->
   <text x="600" y="540"
         text-anchor="middle"
         font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace"
         font-weight="400"
         font-size="18"
         letter-spacing="6"
-        fill="rgba(155,155,149,0.7)">A G E N T  ·  N A T I V E</text>
+        fill="rgba(155,155,149,0.75)">${
+            releaseTag
+                ? `A G E N T   ·   N A T I V E   ·   ${releaseTag.toUpperCase()}`
+                : 'A G E N T   ·   N A T I V E'
+        }</text>
+
+  <!-- Bottom-left mint dot + rox.one wordmark, mirroring the live-pill -->
+  <circle cx="42" cy="588" r="4" fill="#5EFFB0"/>
+  <text x="58" y="593"
+        font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace"
+        font-weight="500"
+        font-size="13"
+        letter-spacing="2.5"
+        fill="rgba(155,155,149,0.85)">rox.one</text>
 
   <rect width="1200" height="630" fill="url(#og-vignette)"/>
 </svg>`
@@ -116,6 +141,7 @@ async function rasterise(svgString, outFile, width, height) {
 
 ;(async () => {
     console.log('[build-assets] rasterising icons + OG ...')
+    if (releaseTag) console.log(`[build-assets] embedding release ${releaseTag} in OG`)
     await rasterise(ICON_SVG, path.join(STATIC, 'icon-192.png'), 192, 192)
     await rasterise(ICON_SVG, path.join(STATIC, 'icon-512.png'), 512, 512)
     await rasterise(ICON_SVG, path.join(STATIC, 'apple-touch-icon.png'), 180, 180)
