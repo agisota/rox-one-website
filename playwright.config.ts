@@ -1,6 +1,10 @@
 import { defineConfig, devices } from '@playwright/test'
 
 const PORT = process.env.PORT ?? '9000'
+// Bind via 127.0.0.1 explicitly; gatsby serve now listens on 0.0.0.0
+// (see `serve` script in package.json) so the IPv4 family is reachable.
+// localhost on hardened CI runners resolves to ::1 only, which is why
+// previous CI runs timed out polling the wrong family.
 const BASE = `http://127.0.0.1:${PORT}`
 
 export default defineConfig({
