@@ -490,7 +490,10 @@ export default function Index(): JSX.Element {
 
     return (
         <>
-            <Helmet htmlAttributes={{ lang: 'ru' }}>
+            <Helmet
+                htmlAttributes={{ lang: 'ru' }}
+                bodyAttributes={{ class: 'splash-locked' }}
+            >
                 <title>ROX.ONE</title>
                 <meta name="theme-color" content="#08090C" />
                 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
@@ -539,6 +542,28 @@ export default function Index(): JSX.Element {
                         offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
                         image: 'https://rox.one/og/default.png',
                         sameAs: ['https://github.com/agisota/rox-one-terminal'],
+                    })}
+                </script>
+                <script type="application/ld+json">
+                    {JSON.stringify({
+                        '@context': 'https://schema.org',
+                        '@type': 'WebSite',
+                        name: 'ROX.ONE',
+                        url: 'https://rox.one',
+                        publisher: {
+                            '@type': 'Organization',
+                            name: 'ROX.ONE',
+                            url: 'https://rox.one',
+                            logo: 'https://rox.one/icon-512.png',
+                        },
+                        potentialAction: {
+                            '@type': 'SearchAction',
+                            target: {
+                                '@type': 'EntryPoint',
+                                urlTemplate: `https://github.com/agisota/rox-one-terminal/search?q={search_term_string}`,
+                            },
+                            'query-input': 'required name=search_term_string',
+                        },
                     })}
                 </script>
                 {/* Cloudflare Web Analytics — cookieless, only loads if token is configured */}
@@ -646,6 +671,12 @@ export default function Index(): JSX.Element {
                                 <div className="info-row">
                                     <dt>site</dt>
                                     <dd>MIT</dd>
+                                </div>
+                                <div className="info-row">
+                                    <dt>history</dt>
+                                    <dd>
+                                        <a href="/changelog/">changelog</a>
+                                    </dd>
                                 </div>
                             </dl>
 

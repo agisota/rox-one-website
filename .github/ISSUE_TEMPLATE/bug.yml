@@ -1,0 +1,30 @@
+name: Site bug
+description: Something on rox.one looks or behaves wrong.
+labels: ["bug"]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What's wrong?
+      placeholder: The wordmark looks blurry on my browser, the download link 404s, …
+    validations:
+      required: true
+  - type: input
+    id: where
+    attributes:
+      label: URL
+      placeholder: https://rox.one/
+    validations:
+      required: false
+  - type: input
+    id: browser
+    attributes:
+      label: Browser / device
+      placeholder: Chrome 140 on macOS 15 / Safari iOS 18 / Firefox 128 on Linux
+    validations:
+      required: true
+  - type: textarea
+    id: extra
+    attributes:
+      label: Anything else?
+      placeholder: Console errors, screenshots, what you expected vs. saw.

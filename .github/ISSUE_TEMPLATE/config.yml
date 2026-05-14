@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: ROX.ONE Terminal (app) — bugs, features
+    url: https://github.com/agisota/rox-one-terminal/issues/new/choose
+    about: Issues about the desktop app itself belong in the app repo.
+  - name: Security advisory
+    url: https://github.com/agisota/rox-one-terminal/security/advisories/new
+    about: Privately disclose a security vulnerability.

@@ -23,12 +23,17 @@
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
         text-rendering: optimizeLegibility;
-        overflow: hidden;
         overscroll-behavior: none;
         margin: 0;
-        /* iOS — eliminate rubber-band, respect notch area */
-        touch-action: none;
+        /* Respect notch on iOS */
         padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    }
+
+    /* Splash page locks scroll (and on iOS, rubber-band). The /changelog
+       page intentionally allows scroll, so this is opt-in via class. */
+    body.splash-locked {
+        overflow: hidden;
+        touch-action: none;
     }
 
     ::selection { background: theme('colors.fg'); color: theme('colors.bg'); }
@@ -257,6 +262,135 @@
         text-transform: uppercase;
         color: theme('colors.fg-subtle');
         text-align: center;
+    }
+
+    /* ─── /changelog page ───────────────────────────────────────────────── */
+
+    .changelog-page {
+        position: relative;
+        min-height: 100vh;
+        padding: 60px 24px 80px;
+        max-width: 720px;
+        margin: 0 auto;
+    }
+    @media (min-width: 768px) {
+        .changelog-page { padding: 100px 32px 120px; }
+    }
+
+    .changelog-header {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 24px;
+        margin-bottom: 56px;
+    }
+    .changelog-back {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        font-family: theme('fontFamily.sans');
+        font-size: 18px;
+        font-weight: 600;
+        letter-spacing: -0.02em;
+        color: theme('colors.fg');
+        text-decoration: none;
+        transition: opacity 240ms ease;
+    }
+    .changelog-back:hover { opacity: 0.7; }
+    .changelog-back span { color: theme('colors.fg-subtle'); }
+    .changelog-title {
+        font-family: theme('fontFamily.mono');
+        font-size: 11px;
+        letter-spacing: 0.32em;
+        text-transform: uppercase;
+        color: theme('colors.fg-subtle');
+    }
+
+    .changelog-list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 56px;
+    }
+    .changelog-entry {
+        position: relative;
+        padding-left: 0;
+    }
+    .changelog-entry + .changelog-entry::before {
+        content: '';
+        position: absolute;
+        top: -28px;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: linear-gradient(to right, rgba(255,255,255,0.06), transparent);
+    }
+    .changelog-meta {
+        display: flex;
+        align-items: baseline;
+        gap: 14px;
+        margin-bottom: 12px;
+    }
+    .changelog-version {
+        display: inline-block;
+        padding: 3px 9px;
+        border-radius: 6px;
+        background: rgba(94,255,176,0.08);
+        border: 1px solid rgba(94,255,176,0.18);
+        font-family: theme('fontFamily.mono');
+        font-size: 11px;
+        font-weight: 500;
+        letter-spacing: 0.08em;
+        color: #5EFFB0;
+    }
+    .changelog-date {
+        font-family: theme('fontFamily.mono');
+        font-size: 11px;
+        letter-spacing: 0.14em;
+        color: theme('colors.fg-subtle');
+    }
+    .changelog-name {
+        font-size: 22px;
+        font-weight: 500;
+        letter-spacing: -0.02em;
+        line-height: 1.2;
+        color: theme('colors.fg');
+        margin: 0 0 12px 0;
+    }
+    .changelog-body {
+        font-size: 14.5px;
+        line-height: 1.65;
+        color: theme('colors.fg-muted');
+        margin: 0 0 16px 0;
+    }
+    .changelog-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-family: theme('fontFamily.mono');
+        font-size: 11px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: theme('colors.fg-subtle');
+        text-decoration: none;
+        transition: color 280ms ease, gap 280ms cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .changelog-link:hover { color: theme('colors.fg'); gap: 12px; }
+    .changelog-empty {
+        list-style: none;
+        padding: 60px 0;
+        text-align: center;
+        color: theme('colors.fg-subtle');
+        font-family: theme('fontFamily.mono');
+        font-size: 13px;
+    }
+    .changelog-empty a {
+        color: theme('colors.fg');
+        text-decoration: underline;
+        text-decoration-color: rgba(255,255,255,0.2);
+        text-underline-offset: 4px;
     }
 
     /* ─── SW update toast (bottom-right) ───────────────────────────────── */

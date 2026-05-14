@@ -1,0 +1,16 @@
+name: Site idea
+description: Suggest an improvement for rox.one.
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: idea
+    attributes:
+      label: Your idea
+      placeholder: It would be nice if …
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Why it matters
+      placeholder: This would help because …
