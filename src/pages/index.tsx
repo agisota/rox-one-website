@@ -68,6 +68,7 @@ export default function Index(): JSX.Element {
     const [prevMode, setPrevMode] = useState<Mode>('day')
     const [transitionStart, setTransitionStart] = useState<number | null>(null)
     const [showInfo, setShowInfo] = useState(false)
+    const [updateAvailable, setUpdateAvailable] = useState(false)
     const [version, setVersion] = useState<string>('v0.9.2')
 
     const stateRef = useRef({ mode, prevMode, transitionStart })
@@ -272,18 +273,21 @@ export default function Index(): JSX.Element {
         }
     }, [])
 
-    // 5-second wordmark hover → bloom
+    // Wordmark interactions: 5s hover OR direct click → bloom
     useEffect(() => {
         const el = wordmarkRef.current
         if (!el) return
         let timer: ReturnType<typeof setTimeout> | null = null
+
+        const triggerBloom = () => {
+            if (reducedRef.current) return
+            if (bloomRef.current.state === 'idle') {
+                bloomRef.current = { state: 'in', startedAt: performance.now() }
+            }
+        }
         const onEnter = () => {
             if (reducedRef.current) return
-            timer = setTimeout(() => {
-                if (bloomRef.current.state === 'idle') {
-                    bloomRef.current = { state: 'in', startedAt: performance.now() }
-                }
-            }, BLOOM_TRIGGER_MS)
+            timer = setTimeout(triggerBloom, BLOOM_TRIGGER_MS)
         }
         const onLeave = () => {
             if (timer) {
@@ -295,13 +299,32 @@ export default function Index(): JSX.Element {
                 bloomRef.current = { state: 'out', startedAt: performance.now() }
             }
         }
+        const onClick = () => {
+            // Skip the 5s wait — direct click jumps straight into bloom.
+            // Cancel any pending hover-timer so it doesn't double-fire.
+            if (timer) {
+                clearTimeout(timer)
+                timer = null
+            }
+            triggerBloom()
+        }
+
         el.addEventListener('mouseenter', onEnter)
         el.addEventListener('mouseleave', onLeave)
+        el.addEventListener('click', onClick)
         return () => {
             if (timer) clearTimeout(timer)
             el.removeEventListener('mouseenter', onEnter)
             el.removeEventListener('mouseleave', onLeave)
+            el.removeEventListener('click', onClick)
         }
+    }, [])
+
+    // SW update notification
+    useEffect(() => {
+        const onUpdate = () => setUpdateAvailable(true)
+        window.addEventListener('rox:update-available', onUpdate)
+        return () => window.removeEventListener('rox:update-available', onUpdate)
     }, [])
 
     // Keyboard — info overlay (i/?), Escape closes; Konami code
@@ -366,6 +389,8 @@ export default function Index(): JSX.Element {
                 <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
                 <link rel="manifest" href="/manifest.webmanifest" />
                 <link rel="preload" as="image" href="/og/default.png" />
+                <link rel="preconnect" href="https://api.github.com" crossOrigin="anonymous" />
+                <link rel="dns-prefetch" href="https://github.com" />
                 <link
                     rel="alternate"
                     type="text/plain"
@@ -418,8 +443,10 @@ export default function Index(): JSX.Element {
                     <div className="tilt-stage">
                         <h1
                             ref={wordmarkRef}
-                            className="tilt-h1 living-wordmark select-none whitespace-nowrap text-center leading-[0.88] tracking-[-0.06em] text-[clamp(4.5rem,17vw,19rem)]"
-                            aria-label="ROX.ONE"
+                            className="tilt-h1 living-wordmark select-none whitespace-nowrap text-center leading-[0.88] tracking-[-0.06em] text-[clamp(4.5rem,17vw,19rem)] cursor-pointer"
+                            aria-label="ROX.ONE — click for bloom"
+                            role="button"
+                            tabIndex={-1}
                         >
                             {LETTERS.map((c, i) => (
                                 <span
@@ -494,8 +521,47 @@ export default function Index(): JSX.Element {
                                     <dd>MIT</dd>
                                 </div>
                             </dl>
-                            <p className="info-hint">esc / click to close</p>
+
+                            <p className="info-section">Keyboard</p>
+                            <dl>
+                                <div className="info-row">
+                                    <dt>i  /  ?</dt>
+                                    <dd>open this panel</dd>
+                                </div>
+                                <div className="info-row">
+                                    <dt>esc</dt>
+                                    <dd>close panel</dd>
+                                </div>
+                                <div className="info-row">
+                                    <dt>↑↑↓↓←→←→ba</dt>
+                                    <dd>theme invert (5s)</dd>
+                                </div>
+                                <div className="info-row">
+                                    <dt>click wordmark</dt>
+                                    <dd>bloom now</dd>
+                                </div>
+                                <div className="info-row">
+                                    <dt>hover wordmark 5s</dt>
+                                    <dd>bloom (auto)</dd>
+                                </div>
+                            </dl>
+
+                            <p className="info-hint">esc / click outside to close</p>
                         </div>
+                    </div>
+                )}
+
+                {updateAvailable && (
+                    <div className="update-toast" role="status" aria-live="polite">
+                        <span className="update-dot" />
+                        <span>новая версия</span>
+                        <button
+                            type="button"
+                            onClick={() => window.location.reload()}
+                            className="update-btn"
+                        >
+                            обновить
+                        </button>
                     </div>
                 )}
             </main>

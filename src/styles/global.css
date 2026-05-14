@@ -206,6 +206,14 @@
     .info-row dd { color: theme('colors.fg'); }
     .info-row a { color: theme('colors.fg'); text-decoration: none; border-bottom: 1px solid rgba(245, 244, 239, 0.2); }
     .info-row a:hover { border-bottom-color: theme('colors.fg'); }
+    .info-section {
+        margin: 24px 0 4px;
+        font-family: theme('fontFamily.mono');
+        font-size: 9.5px;
+        letter-spacing: 0.32em;
+        text-transform: uppercase;
+        color: theme('colors.fg-subtle');
+    }
     .info-hint {
         margin-top: 20px;
         font-family: theme('fontFamily.mono');
@@ -214,6 +222,58 @@
         text-transform: uppercase;
         color: theme('colors.fg-subtle');
         text-align: center;
+    }
+
+    /* ─── SW update toast (bottom-right) ───────────────────────────────── */
+
+    .update-toast {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 60;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 14px;
+        border-radius: 12px;
+        background: rgba(20, 22, 28, 0.92);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        box-shadow: 0 30px 60px -20px rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(12px);
+        font-family: theme('fontFamily.mono');
+        font-size: 11px;
+        letter-spacing: 0.16em;
+        text-transform: lowercase;
+        color: theme('colors.fg');
+        animation: toast-in 600ms cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+    .update-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 999px;
+        background: #FBBF24;
+        box-shadow: 0 0 6px rgba(251, 191, 36, 0.7);
+        animation: dot-pulse 1.6s ease-in-out infinite;
+    }
+    .update-btn {
+        background: theme('colors.fg');
+        color: theme('colors.bg');
+        border: 0;
+        border-radius: 8px;
+        padding: 6px 12px;
+        font-family: inherit;
+        font-size: 11px;
+        letter-spacing: 0.12em;
+        cursor: pointer;
+        transition: transform 200ms ease, box-shadow 200ms ease;
+    }
+    .update-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 12px 24px -8px rgba(255, 255, 255, 0.25);
+    }
+    @keyframes toast-in {
+        0% { opacity: 0; transform: translateY(20px); }
+        100% { opacity: 1; transform: translateY(0); }
     }
 
     /* ─── Konami easter egg — brief light theme invert ─────────────────────── */
