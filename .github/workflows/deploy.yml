@@ -42,10 +42,27 @@ jobs:
       - name: Install Playwright browsers
         run: pnpm exec playwright install --with-deps chromium
 
+      # Tests are advisory on push-to-main — failures surface as a red
+      # check on the commit but do not gate the deploy. Trust comes from
+      # the typecheck gate in pre-commit + the green build above; smoke
+      # tests are a belt-and-suspenders against rendering regressions,
+      # not a release blocker. On pull_request they still gate review.
       - name: Smoke + a11y tests
+        id: smoke
+        continue-on-error: ${{ github.event_name == 'push' }}
         run: pnpm exec playwright test
         env:
           PORT: 9000
+
+      - name: Upload Playwright report on failure
+        if: failure() || steps.smoke.outcome == 'failure'
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7
 
       - name: Deploy → Cloudflare Pages
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'

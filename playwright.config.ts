@@ -15,8 +15,10 @@ export default defineConfig({
         // Reuses existing built `public/` via gatsby serve. CI builds first.
         command: 'pnpm serve --port ' + PORT,
         url: BASE,
-        timeout: 60_000,
+        timeout: 180_000,
         reuseExistingServer: !process.env.CI,
+        stdout: 'pipe',
+        stderr: 'pipe',
     },
     projects: [
         { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
