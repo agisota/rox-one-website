@@ -7,6 +7,12 @@ on:
     branches: [main]
   workflow_dispatch:
 
+# Opt into Node 24 for JavaScript actions ahead of the June 2 2026
+# forced migration. Lets existing @v4/@v3 actions run on the new
+# runtime today so we catch breakage early instead of on deadline day.
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 permissions:
   contents: read
   deployments: write
