@@ -203,3 +203,18 @@ const t = {
 <script>
     import '../scripts/sw.ts'
 </script>
+<script is:inline>
+    // Highlight the user's likely platform. Runs once at parse;
+    // no listeners, no state. iOS reports as Mac (industry standard);
+    // bots and no-match fall through silently.
+    const ua = navigator.userAgent
+    const p =
+        /Mac/i.test(ua) ? 'mac' :
+        /Win/i.test(ua) ? 'windows' :
+        /Linux/i.test(ua) ? 'linux' :
+        null
+    if (p) {
+        const el = document.querySelector('.dl-platform[data-platform="' + p + '"]')
+        if (el) el.classList.add('dl-platform-active')
+    }
+</script>
