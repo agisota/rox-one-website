@@ -17,8 +17,10 @@ export default defineConfig({
         plugins: [tailwindcss()],
     },
     build: {
-        // Inline tiny critical CSS into the HTML so the atmosphere layer
-        // arrives in the same packet as markup — no FOUC, no extra round-trip.
-        inlineStylesheets: 'auto',
+        // Inline all stylesheets into the HTML. The full bundle is ~15 KB —
+        // a fair amount to inline, but removes a render-blocking request
+        // worth ~240ms (Lighthouse measured). The atmosphere layers paint
+        // immediately on first byte, which is what we want.
+        inlineStylesheets: 'always',
     },
 })

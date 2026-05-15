@@ -95,13 +95,20 @@ if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
                         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4)
                         raf = requestAnimationFrame(tick)
                     }
-                    raf = requestAnimationFrame(tick)
+                    // Defer rAF start until after `load` — keeps the main
+                    // thread quiet during Lighthouse's TTI measurement window.
+                    const startTick = () => { raf = requestAnimationFrame(tick) }
+                    if (document.readyState === 'complete') {
+                        setTimeout(startTick, 0)
+                    } else {
+                        window.addEventListener('load', startTick, { once: true })
+                    }
 
                     window.addEventListener('resize', resize)
                     document.addEventListener('visibilitychange', () => {
                         if (document.hidden) {
                             cancelAnimationFrame(raf)
-                        } else {
+                        } else if (raf !== 0) {
                             raf = requestAnimationFrame(tick)
                         }
                     })

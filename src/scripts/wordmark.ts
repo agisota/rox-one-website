@@ -25,9 +25,14 @@ const gauss = (d: number, s: number) => Math.exp(-(d * d) / (2 * s * s))
 const clamp = (v: number, lo: number, hi: number) => (v < lo ? lo : v > hi ? hi : v)
 const easeOutQuart = (t: number) => 1 - Math.pow(1 - t, 4)
 
-const startT = performance.now()
+// Defer animation start until after `load` so Lighthouse's TTI window
+// can close. Three rAF loops (this, shader, particles) running from
+// parse time prevented the main thread from ever going quiet, which
+// tanked the performance score. Starting ~200ms later is visually
+// imperceptible — the breath is a 7.5s sine wave, not a percussive cue.
+let startT = 0
 let waveStart: number | null = null
-let nextWaveAt = startT + FIRST_WAVE_MS
+let nextWaveAt = 0
 let raf = 0
 
 function loop(now: number) {
@@ -71,12 +76,24 @@ function loop(now: number) {
 
     raf = requestAnimationFrame(loop)
 }
-raf = requestAnimationFrame(loop)
+
+function startBreath() {
+    startT = performance.now()
+    nextWaveAt = startT + FIRST_WAVE_MS
+    raf = requestAnimationFrame(loop)
+}
+
+if (document.readyState === 'complete') {
+    setTimeout(startBreath, 0)
+} else {
+    window.addEventListener('load', startBreath, { once: true })
+}
 
 document.addEventListener('visibilitychange', () => {
     if (document.hidden) {
         cancelAnimationFrame(raf)
-    } else {
+    } else if (startT > 0) {
+        // Only re-start if the loop has actually started once
         raf = requestAnimationFrame(loop)
     }
 })

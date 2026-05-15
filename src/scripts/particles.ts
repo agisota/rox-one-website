@@ -92,12 +92,24 @@ if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
 
             raf = requestAnimationFrame(frame)
         }
-        raf = requestAnimationFrame(frame)
+
+        // Defer rAF start until after `load` — same reason as the shader
+        // and wordmark scripts: keep the main thread quiet during
+        // Lighthouse TTI measurement.
+        const startFrame = () => {
+            lastTime = performance.now()
+            raf = requestAnimationFrame(frame)
+        }
+        if (document.readyState === 'complete') {
+            setTimeout(startFrame, 0)
+        } else {
+            window.addEventListener('load', startFrame, { once: true })
+        }
 
         document.addEventListener('visibilitychange', () => {
             if (document.hidden) {
                 cancelAnimationFrame(raf)
-            } else {
+            } else if (raf !== 0) {
                 lastTime = performance.now()
                 raf = requestAnimationFrame(frame)
             }
