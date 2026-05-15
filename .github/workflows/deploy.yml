@@ -2,7 +2,9 @@ name: Build & Deploy
 
 on:
   push:
-    branches: [main, astro-migration]
+    branches:
+      - main
+      - 'feat/**'
   pull_request:
     branches: [main]
   workflow_dispatch:
