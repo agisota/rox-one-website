@@ -1,0 +1,61 @@
+---
+import '../../styles/global.css'
+import Splash from '../../components/Splash.astro'
+import { getReleaseSummary } from '../../lib/release'
+
+const { version } = await getReleaseSummary()
+
+const ldSoftware = {
+    '@context': 'https://schema.org',
+    '@type': 'SoftwareApplication',
+    name: 'ROX.ONE Terminal',
+    operatingSystem: 'macOS',
+    applicationCategory: 'DeveloperApplication',
+    softwareVersion: version,
+    url: 'https://rox.one',
+    downloadUrl:
+        'https://github.com/agisota/rox-one-terminal/releases/latest/download/ROX-ONE-arm64.dmg',
+    offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+}
+---
+
+<!DOCTYPE html>
+<html lang="en" class="splash-locked">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+        <meta name="theme-color" content="#08090C" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="apple-mobile-web-app-title" content="ROX.ONE" />
+        <title>ROX.ONE</title>
+        <meta name="description" content="Agent-native terminal for the most powerful LLMs." />
+
+        <meta property="og:title" content="ROX.ONE" />
+        <meta property="og:description" content="Agent-native terminal for the most powerful LLMs." />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://rox.one/en/" />
+        <meta property="og:image" content="https://rox.one/og/default.png" />
+        <meta property="og:locale" content="en_US" />
+        <meta property="og:locale:alternate" content="ru_RU" />
+        <meta name="twitter:card" content="summary_large_image" />
+
+        <link rel="canonical" href="https://rox.one/en/" />
+        <link rel="alternate" hreflang="ru" href="https://rox.one/" />
+        <link rel="alternate" hreflang="en" href="https://rox.one/en/" />
+        <link rel="alternate" hreflang="x-default" href="https://rox.one/" />
+
+        <link rel="icon" type="image/svg+xml" href="/icon.svg" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+        <link rel="manifest" href="/manifest.webmanifest" />
+        <link rel="alternate" type="application/rss+xml" title="ROX.ONE releases" href="/feed.xml" />
+
+        <script is:inline type="application/ld+json" set:html={JSON.stringify(ldSoftware)} />
+    </head>
+    <body class="splash-locked">
+        <a href="#main" class="skip-link">Skip to content</a>
+        <main id="main" class="fixed inset-0 grid place-items-center overflow-hidden">
+            <Splash locale="en" />
+        </main>
+    </body>
+</html>

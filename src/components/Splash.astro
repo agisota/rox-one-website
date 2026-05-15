@@ -1,0 +1,170 @@
+---
+/**
+ * Splash component — shared by the RU root (/) and EN (/en/) pages.
+ *
+ * Why a component, not two duplicated .astro files: the splash is ~250
+ * lines including inline scripts. Diverging copies would rot in five
+ * minutes. One parameter (locale) handles the only real difference:
+ * the download CTA text. hreflang + locale are wired by the parent.
+ */
+import { getReleaseSummary } from '../lib/release'
+
+interface Props {
+    locale: 'ru' | 'en'
+}
+const { locale } = Astro.props
+
+const DMG_URL = 'https://github.com/agisota/rox-one-terminal/releases/latest/download/ROX-ONE-arm64.dmg'
+const LETTERS = ['R', 'O', 'X', 'O', 'N', 'E'] as const
+
+// Pre-stringify the wordmark so each <span> contains only its letter,
+// with no surrounding whitespace. Astro's template language preserves
+// whitespace adjacent to `{expr}` (unlike JSX, which strips it), so the
+// JSX-shaped {LETTERS.map(...)} form was producing "R O X O N E" text
+// content with literal spaces. set:html guarantees byte-deterministic output.
+const wordmarkHtml = LETTERS.map(
+    (c, i) =>
+        `<span class="letter letter-${i} inline-block animate-letter-in" style="animation-delay: ${
+            200 + i * 100
+        }ms">${c}</span>`,
+).join('')
+
+const { version, stars } = await getReleaseSummary()
+
+const t = {
+    ru: { download: 'скачать', skip: 'К содержимому', infoTitle: 'ROX.ONE Terminal' },
+    en: { download: 'download', skip: 'Skip to content', infoTitle: 'ROX.ONE Terminal' },
+}[locale]
+---
+
+<!-- Atmospheric backdrop — pure CSS, zero JS, no FCP cost. -->
+<div aria-hidden class="atmo-base pointer-events-none absolute inset-0"></div>
+<div aria-hidden class="atmo-key-warm pointer-events-none absolute inset-0 animate-fade-in"></div>
+<div aria-hidden class="atmo-key-cool pointer-events-none absolute inset-0 animate-fade-in" style="animation-delay: 0.2s"></div>
+<div aria-hidden class="atmo-bloom pointer-events-none absolute inset-0 animate-fade-in" style="animation-delay: 0.4s"></div>
+<div aria-hidden class="atmo-iris pointer-events-none absolute inset-0 animate-fade-in" style="animation-delay: 0.3s"></div>
+<div aria-hidden class="atmo-vignette pointer-events-none absolute inset-0"></div>
+<div aria-hidden class="atmo-grain pointer-events-none absolute inset-0"></div>
+
+<canvas
+    id="shader-canvas"
+    aria-hidden="true"
+    class="pointer-events-none fixed inset-0"
+    style="mix-blend-mode: screen; z-index: 0"
+></canvas>
+
+<canvas
+    id="particles-canvas"
+    aria-hidden="true"
+    class="pointer-events-none fixed inset-0"
+    style="z-index: 0"
+></canvas>
+
+<div class="relative flex flex-col items-center gap-20 px-6 sm:gap-28" style="z-index: 1">
+    <div class="tilt-stage">
+        <h1
+            id="wordmark"
+            class="tilt-h1 living-wordmark select-none whitespace-nowrap text-center leading-[0.88] tracking-[-0.06em] cursor-pointer"
+            style="font-size: clamp(4.5rem, 17vw, 19rem)"
+            aria-label="ROX.ONE"
+            set:html={wordmarkHtml}
+        />
+    </div>
+
+    <div class="animate-fade-up" style="animation-delay: 1.4s">
+        <a href={DMG_URL} class="dl-link">{t.download}</a>
+    </div>
+</div>
+
+<a
+    href="https://github.com/agisota/rox-one-terminal/releases"
+    target="_blank"
+    rel="noreferrer"
+    class="live-pill"
+    aria-label={`ROX.ONE Terminal ${version} on GitHub${stars ? `, ${stars} stars` : ''}`}
+>
+    <span aria-hidden class="live-dot"></span>
+    <span>{version}</span>
+    {stars > 0 && (
+        <>
+            <span aria-hidden style="opacity: 0.4">·</span>
+            <span aria-hidden>★ {stars}</span>
+        </>
+    )}
+</a>
+
+<!-- Info overlay — rendered always, toggled via [hidden] attribute by the
+     keyboard module. Keeps the focus-trap reusable across locales. -->
+<div
+    id="info-overlay"
+    class="info-scrim"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="info-title"
+    hidden
+>
+    <div class="info-panel">
+        <h2 id="info-title" class="sr-only">{t.infoTitle}</h2>
+        <dl>
+            <div class="info-row"><dt>product</dt><dd>ROX.ONE Terminal</dd></div>
+            <div class="info-row"><dt>version</dt><dd>{version}</dd></div>
+            <div class="info-row"><dt>platform</dt><dd>macOS · Apple Silicon</dd></div>
+            <div class="info-row">
+                <dt>source</dt>
+                <dd>
+                    <a href="https://github.com/agisota/rox-one-terminal" target="_blank" rel="noreferrer">
+                        github.com/agisota/rox-one-terminal
+                    </a>
+                </dd>
+            </div>
+            <div class="info-row"><dt>license</dt><dd>Apache 2.0</dd></div>
+            <div class="info-row">
+                <dt>language</dt>
+                <dd>
+                    {locale === 'ru' ? (
+                        <a href="/en/">English</a>
+                    ) : (
+                        <a href="/">русский</a>
+                    )}
+                </dd>
+            </div>
+        </dl>
+        <p class="info-section">Keyboard</p>
+        <dl>
+            <div class="info-row"><dt>⌘K / Ctrl+K</dt><dd>command palette</dd></div>
+            <div class="info-row"><dt>i &nbsp;/&nbsp; ?</dt><dd>open this panel</dd></div>
+            <div class="info-row"><dt>esc</dt><dd>close panel</dd></div>
+            <div class="info-row"><dt>↑↑↓↓←→←→ba</dt><dd>theme invert (5s)</dd></div>
+            <div class="info-row"><dt>type "rox"</dt><dd>accent halo</dd></div>
+        </dl>
+        <p class="info-hint">esc / click outside to close</p>
+    </div>
+</div>
+
+<!-- Command palette — same shape as Gatsby version, hidden by default. -->
+<div id="cmdk-scrim" class="cmdk-scrim" hidden>
+    <!-- Drop role="dialog" here to keep [role="dialog"] unique to the info
+         overlay (smoke tests use that selector). aria-modal + aria-label
+         still announce the palette to screen readers via the input's label. -->
+    <div class="cmdk-panel" aria-label="Command palette" aria-modal="true">
+        <input id="cmdk-input" type="text" class="cmdk-input" placeholder="Type a command…" autocomplete="off" />
+        <ul id="cmdk-list" class="cmdk-list" role="listbox"></ul>
+    </div>
+</div>
+
+<!-- Wordmark breath, mouse tilt, daylight tint. Single rAF loop, no React. -->
+<script>
+    import '../scripts/wordmark.ts'
+</script>
+<script>
+    import '../scripts/shader.ts'
+</script>
+<script>
+    import '../scripts/particles.ts'
+</script>
+<script>
+    import '../scripts/keyboard.ts'
+</script>
+<script>
+    import '../scripts/sw.ts'
+</script>

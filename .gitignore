@@ -1,39 +1,39 @@
-# Project dependencies
-.cache
+# Dependencies
 node_modules
 .pnp.*
 
-# Build directory
-/public
-.DS_Store
+# Astro build + cache
+dist
+.astro
 
+# CF Pages local
+.wrangler
+
+# Test artifacts
+test-results
+playwright-report
+
+# Editor / OS
+.DS_Store
 .vscode
 .idea
 
-package-lock.json
-pr_diff
+# Logs
+*.log
 
-recipe-server.log
-
-static/fonts/MatterSQItalicVF.woff
-static/fonts/MatterSQItalicVF.woff2
-static/fonts/MatterSQVF.woff
-static/fonts/MatterSQVF.woff2
-static/scripts/posthog-init.js
-.vercel
+# Local-only env
 .env
-*Type.ts
-.env.development
+.env.local
 .env.*.local
 CLAUDE.local.md
 
-# Generated data files
-src/data/mcp-tools.json
+# Avoid accidental npm lockfiles when pnpm is the source of truth
+package-lock.json
 
-# Python cache
+# Python cache (in case any tooling drops it)
 __pycache__
 *.pyc
 *.pyo
 
-.env*.local
+# Claude / OMC working state
 /.claude/worktrees/
