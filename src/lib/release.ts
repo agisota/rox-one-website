@@ -100,3 +100,23 @@ export async function getReleaseSummary(): Promise<ReleaseSummary> {
     }
     return cached
 }
+
+/**
+ * Download URLs for each platform's binary. GitHub Releases'
+ * `…/releases/latest/download/<asset-name>` always redirects to the most
+ * recent release's asset of that name, so these don't need updating per
+ * release. Linux and Windows binaries 404 until product ships them
+ * (coordinated separately in `agisota/rox-one-terminal`).
+ */
+export const URLS = {
+    mac: 'https://github.com/agisota/rox-one-terminal/releases/latest/download/ROX-ONE-arm64.dmg',
+    linux: 'https://github.com/agisota/rox-one-terminal/releases/latest/download/ROX-ONE-linux-x64.AppImage',
+    windows: 'https://github.com/agisota/rox-one-terminal/releases/latest/download/ROX-ONE-win-x64.exe',
+} as const
+
+/**
+ * Top-level GitHub releases page — used by JSON-LD downloadUrl since
+ * the product is multi-platform; pointing at one binary would mislead
+ * structured-data consumers.
+ */
+export const RELEASES_PAGE = 'https://github.com/agisota/rox-one-terminal/releases/latest' as const

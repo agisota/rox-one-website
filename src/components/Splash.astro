@@ -7,18 +7,12 @@
  * minutes. One parameter (locale) handles the only real difference:
  * the download CTA text. hreflang + locale are wired by the parent.
  */
-import { getReleaseSummary } from '../lib/release'
+import { getReleaseSummary, URLS } from '../lib/release'
 
 interface Props {
     locale: 'ru' | 'en'
 }
 const { locale } = Astro.props
-
-const URLS = {
-    mac: 'https://github.com/agisota/rox-one-terminal/releases/latest/download/ROX-ONE-arm64.dmg',
-    linux: 'https://github.com/agisota/rox-one-terminal/releases/latest/download/ROX-ONE-linux-x64.AppImage',
-    windows: 'https://github.com/agisota/rox-one-terminal/releases/latest/download/ROX-ONE-win-x64.exe',
-} as const
 
 // SVG path strings from simpleicons.org (CC0). Inlined rather than
 // imported as a build dep: three paths total ~6.5KB raw (≈2KB gzipped),
@@ -205,10 +199,17 @@ const t = {
 </script>
 <script is:inline>
     // Highlight the user's likely platform. Runs once at parse;
-    // no listeners, no state. iOS reports as Mac (industry standard);
-    // bots and no-match fall through silently.
+    // no listeners, no state. iOS reports as Mac (industry standard).
+    // Android UAs contain "Linux" — short-circuit those (and ChromeOS)
+    // to no-highlight; we have no Android/ChromeOS binary to point at.
+    // Bots and no-match fall through silently.
     const ua = navigator.userAgent
+    // Order matters: Android UAs include "Linux", so /Android/i must
+    // short-circuit before /Linux/i. Same for ChromeOS /CrOS/. No button
+    // exists for those today — graceful fallback to no highlight.
     const p =
+        /Android/i.test(ua) ? null :
+        /CrOS/i.test(ua) ? null :
         /Mac/i.test(ua) ? 'mac' :
         /Win/i.test(ua) ? 'windows' :
         /Linux/i.test(ua) ? 'linux' :

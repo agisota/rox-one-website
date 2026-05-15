@@ -5,6 +5,7 @@
  * Vanilla DOM. Uses `[hidden]` attribute for show/hide so screen readers
  * pick up state changes correctly via the role="dialog" + aria-modal.
  */
+import { URLS } from '../lib/release'
 
 const KONAMI = [
     'ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown',
@@ -55,8 +56,7 @@ const commands: Command[] = [
         hint: 'macOS arm64 .dmg',
         keywords: 'download dmg mac install скачать',
         action: () => {
-            window.location.href =
-                'https://github.com/agisota/rox-one-terminal/releases/latest/download/ROX-ONE-arm64.dmg'
+            window.location.href = URLS.mac
         },
     },
     {

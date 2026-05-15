@@ -1,7 +1,7 @@
 ---
 import '../styles/global.css'
 import Splash from '../components/Splash.astro'
-import { getReleaseSummary } from '../lib/release'
+import { getReleaseSummary, RELEASES_PAGE } from '../lib/release'
 
 const { version } = await getReleaseSummary()
 
@@ -12,12 +12,11 @@ const ldSoftware = {
     '@context': 'https://schema.org',
     '@type': 'SoftwareApplication',
     name: 'ROX.ONE Terminal',
-    operatingSystem: 'macOS',
+    operatingSystem: ['macOS', 'Linux', 'Windows'],
     applicationCategory: 'DeveloperApplication',
     softwareVersion: version,
     url: 'https://rox.one',
-    downloadUrl:
-        'https://github.com/agisota/rox-one-terminal/releases/latest/download/ROX-ONE-arm64.dmg',
+    downloadUrl: RELEASES_PAGE,
     offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
 }
 const ldWebsite = {
