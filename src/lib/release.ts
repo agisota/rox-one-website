@@ -105,13 +105,21 @@ export async function getReleaseSummary(): Promise<ReleaseSummary> {
  * Download URLs for each platform's binary. GitHub Releases'
  * `…/releases/latest/download/<asset-name>` always redirects to the most
  * recent release's asset of that name, so these don't need updating per
- * release. Linux and Windows binaries 404 until product ships them
- * (coordinated separately in `agisota/rox-one-terminal`).
+ * release.
+ *
+ * Filename convention: `ROX-ONE-<arch>.<ext>` — the extension already
+ * identifies the platform (.dmg = macOS, .AppImage = Linux, .exe = Windows)
+ * so a `linux-` or `win-` prefix would be redundant. Matches what
+ * electron-builder emits in agisota/rox-one-terminal:apps/electron/
+ * electron-builder.yml (`artifactName: "ROX-ONE-${arch}.${ext}"`).
+ *
+ * Linux .AppImage and Windows .exe land on the release via the
+ * release-all-platforms workflow (tag-push triggered in the product repo).
  */
 export const URLS = {
     mac: 'https://github.com/agisota/rox-one-terminal/releases/latest/download/ROX-ONE-arm64.dmg',
-    linux: 'https://github.com/agisota/rox-one-terminal/releases/latest/download/ROX-ONE-linux-x64.AppImage',
-    windows: 'https://github.com/agisota/rox-one-terminal/releases/latest/download/ROX-ONE-win-x64.exe',
+    linux: 'https://github.com/agisota/rox-one-terminal/releases/latest/download/ROX-ONE-x64.AppImage',
+    windows: 'https://github.com/agisota/rox-one-terminal/releases/latest/download/ROX-ONE-x64.exe',
 } as const
 
 /**

@@ -32,11 +32,11 @@ test.describe('rox.one splash', () => {
         )
         await expect(linux).toHaveAttribute(
             'href',
-            'https://github.com/agisota/rox-one-terminal/releases/latest/download/ROX-ONE-linux-x64.AppImage',
+            'https://github.com/agisota/rox-one-terminal/releases/latest/download/ROX-ONE-x64.AppImage',
         )
         await expect(windows).toHaveAttribute(
             'href',
-            'https://github.com/agisota/rox-one-terminal/releases/latest/download/ROX-ONE-win-x64.exe',
+            'https://github.com/agisota/rox-one-terminal/releases/latest/download/ROX-ONE-x64.exe',
         )
 
         await expect(mac).toHaveAttribute('aria-label', /apple silicon/i)
