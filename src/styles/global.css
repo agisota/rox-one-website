@@ -131,9 +131,60 @@ html, body {
 .living-wordmark .letter-4 { --w: var(--w-4); }
 .living-wordmark .letter-5 { --w: var(--w-5); }
 
-/* Download link — barely-visible per spec. */
+/* em-gap between "ROX" (letters 0-2) and "ONE" (letters 3-5). The
+   wordmark is one <h1> so a per-letter margin is the cleanest seam. */
+.living-wordmark .letter-3 {
+    margin-left: 0.35em;
+}
+
+.dl-platforms {
+    display: flex;
+    gap: 2.5rem;
+    align-items: flex-start;
+    justify-content: center;
+}
+
+.dl-platform {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    min-width: 44px;
+    min-height: 44px;
+    color: rgba(245, 244, 239, 0.4);
+    text-decoration: none;
+    transition: color 0.3s;
+}
+
+.dl-icon {
+    width: 28px;
+    height: 28px;
+    fill: currentColor;
+}
+
+.dl-platform-label {
+    font-size: 0.66rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+}
+
+.dl-platform:hover {
+    color: rgba(245, 244, 239, 0.85);
+}
+
+.dl-platform-active {
+    color: rgba(245, 244, 239, 0.7);
+}
+
+.dl-platform-active:hover {
+    color: var(--fg);
+}
+
+/* Subtle text link — used by 404 pages' "back home" link. Same temperature
+   as the dl-platform labels. */
 .dl-link {
-    color: var(--fg-muted, rgba(245, 244, 239, 0.35));
+    color: var(--fg-muted, rgba(245, 244, 239, 0.45));
     font-size: 0.74rem;
     font-weight: 400;
     letter-spacing: 0.32em;

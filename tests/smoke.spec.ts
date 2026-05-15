@@ -17,14 +17,31 @@ test.describe('rox.one splash', () => {
         await expect(wordmark).toHaveText('ROXONE')
     })
 
-    test('download link points at the latest arm64 DMG', async ({ page }) => {
-        const link = page.locator('a.dl-link')
-        await expect(link).toBeVisible()
-        await expect(link).toHaveAttribute(
+    test('three platform download buttons render with correct hrefs', async ({ page }) => {
+        const mac = page.locator('a.dl-platform[data-platform="mac"]')
+        const linux = page.locator('a.dl-platform[data-platform="linux"]')
+        const windows = page.locator('a.dl-platform[data-platform="windows"]')
+
+        await expect(mac).toBeVisible()
+        await expect(linux).toBeVisible()
+        await expect(windows).toBeVisible()
+
+        await expect(mac).toHaveAttribute(
             'href',
             'https://github.com/agisota/rox-one-terminal/releases/latest/download/ROX-ONE-arm64.dmg',
         )
-        await expect(link).toHaveText(/скачать/i)
+        await expect(linux).toHaveAttribute(
+            'href',
+            'https://github.com/agisota/rox-one-terminal/releases/latest/download/ROX-ONE-linux-x64.AppImage',
+        )
+        await expect(windows).toHaveAttribute(
+            'href',
+            'https://github.com/agisota/rox-one-terminal/releases/latest/download/ROX-ONE-win-x64.exe',
+        )
+
+        await expect(mac).toHaveAttribute('aria-label', /apple silicon/i)
+        await expect(linux).toHaveAttribute('aria-label', /linux/i)
+        await expect(windows).toHaveAttribute('aria-label', /windows/i)
     })
 
     test('PWA manifest is linked and reachable', async ({ page, request }) => {
