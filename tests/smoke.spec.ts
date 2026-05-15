@@ -63,6 +63,16 @@ test.describe('rox.one splash', () => {
         expect(res.headers()['content-type']).toContain('image/png')
     })
 
+    test("user's platform is auto-highlighted via UA detection", async ({ page }) => {
+        // The inline detect script runs synchronously during HTML parse and
+        // applies `.dl-platform-active` to the button matching the user's OS.
+        // By the time page.goto() resolves on `load`, the class is on the DOM.
+        // We don't assert which platform — the runner's UA determines that;
+        // contract is "exactly one button is highlighted on a known OS".
+        const active = page.locator('a.dl-platform.dl-platform-active')
+        await expect(active).toHaveCount(1)
+    })
+
     test('info overlay opens on "i" and closes on Escape', async ({ page }) => {
         // Wait for hydration before exercising keyboard handlers — the SSR
         // HTML loads before React attaches the document-level keydown listener.
