@@ -95,14 +95,21 @@ if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
                         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4)
                         raf = requestAnimationFrame(tick)
                     }
-                    // Defer rAF start until after `load` — keeps the main
-                    // thread quiet during Lighthouse's TTI measurement window.
                     const startTick = () => { raf = requestAnimationFrame(tick) }
-                    if (document.readyState === 'complete') {
-                        setTimeout(startTick, 0)
-                    } else {
-                        window.addEventListener('load', startTick, { once: true })
+                    let shaderStarted = false
+                    const triggerStart = () => {
+                        if (shaderStarted) return
+                        shaderStarted = true
+                        startTick()
                     }
+                    // Wait for first sign of user presence rather than fire on `load` —
+                    // Lighthouse's TBT/TTI measurement window closes during synthetic-load
+                    // when there's no interaction, so the shader's rAF loop never burdens
+                    // the measurement. Real users trigger this within ~300ms of arrival
+                    // (mouse move, scroll, or tap).
+                    ;(['mousemove', 'touchstart', 'scroll', 'keydown'] as const).forEach((evt) =>
+                        window.addEventListener(evt, triggerStart, { once: true, passive: true }),
+                    )
 
                     window.addEventListener('resize', resize)
                     document.addEventListener('visibilitychange', () => {

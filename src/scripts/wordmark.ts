@@ -17,6 +17,9 @@ const WAVE_DURATION_MS = 2_000
 const WAVE_BOOST = 60
 const FIRST_WAVE_MS = 7_000
 const TAU = Math.PI * 2
+const TARGET_FRAME_MS = 33  // ~30fps — halves CPU vs default 60fps;
+                            // imperceptible at 7.5s sine wave period
+let lastFrameTime = 0
 
 const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
 const root = document.documentElement.style
@@ -36,6 +39,11 @@ let nextWaveAt = 0
 let raf = 0
 
 function loop(now: number) {
+    if (now - lastFrameTime < TARGET_FRAME_MS) {
+        raf = requestAnimationFrame(loop)
+        return
+    }
+    lastFrameTime = now
     const t = (now - startT) / 1000
 
     if (!reduced && now >= nextWaveAt && waveStart === null) {
